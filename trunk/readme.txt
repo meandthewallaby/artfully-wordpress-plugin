@@ -1,7 +1,7 @@
 ﻿=== Artful.ly Widget ===
 
 Contributors: fracturedatlas, Arrow Root Media
-Tags: artful.ly api, widget, ticket, ticket sales, 
+Tags: artful.ly api, widget, ticket, ticket sales, Artful.ly, Artfully, ticketing, donations, donation, arts
 Requires at least: 3.0
 Tested up to: 3.3.1
 Stable tag: 0.9
@@ -26,7 +26,11 @@ Features
 
 = From Wordpress Plugin Directory =
 
-2. TODO
+3. Login to your Wordpress site as an administrator
+4. Click "Plugins"
+5. Click "Add New"
+6. In the search box, search for "artfully-widget"
+7. Under "Artful.ly Widget" click "Install Now"
 
 = From zip file =
 
