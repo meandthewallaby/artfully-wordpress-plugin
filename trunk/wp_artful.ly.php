@@ -2,15 +2,15 @@
 /*
  * Plugin Name: artfully-widget
  * Description: Adds a Shortcode to Wordpress Post/Page with an Event ID. You can easily include a Dynamic Event ID Shortcode into your WordPress's Blog Post/Page.
- * Version: 0.9
+ * Version: 0.10
  */
 ?>
 <?php
 define('NME_PLUGIN_URL', WP_PLUGIN_URL . '/' . dirname(plugin_basename(__FILE__)));
 
 function nme_add_scripts() {
-    wp_enqueue_script('artfully.js', 'https://www.artfullyhq.com/assets/artfully.js', array('jquery'));
-    wp_enqueue_style('artfully.css', 'https://www.artfullyhq.com/assets/themes/default.css');
+    wp_enqueue_script('artfully.js', 'https://www.artful.ly/assets/artfully-v3.js', array('jquery'));
+    wp_enqueue_style('artfully.css', 'https://www.artful.ly/assets/themes/default.css');
 }
 
 add_action('wp_head', 'nme_add_scripts', 1);
@@ -21,7 +21,7 @@ function art_event_data($atts) {
     extract(shortcode_atts(array(
                 'id' => '21',
                     ), $atts));
-    echo '<div id="event"></div>';
+    echo '<div id="artfully-event"></div>';
     wp_enqueue_script( 'artfully_event', NME_PLUGIN_URL.'/js/artfully-event.js', false, false, true);
     wp_localize_script( 'artfully_event', 'artfully_event', array('eventId' => $id) );
 }
@@ -105,7 +105,7 @@ function nme_artful_tinymce_registerbutton($buttons) {
 }
 
 function nme_artful_tinymce_addplugin($plugin_array) {
-    $plugin_array['polls'] = plugins_url('artfully-wordpress-plugin/lib/tinymce/plugins/polls/editor_plugin.js');
+    $plugin_array['polls'] = plugins_url('artfully-widget/lib/tinymce/plugins/polls/editor_plugin.js');
     return $plugin_array;
 }
 

@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
-    <?php require_once('../../../wp-load.php'); ?>
+    <?php require_once('../../../../wp-load.php'); ?>
     <?php $include_url = includes_url(); ?>
     <head>
         <title></title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <script src="<?php echo NME_PLUGIN_URL; ?>/js/jquery.min.js" type="text/javascript"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
         <script src="<?php echo $include_url; ?>/js/tinymce/tiny_mce_popup.js" type="text/javascript"></script>
     </head>
     <body>
@@ -19,9 +19,28 @@
         </div>
     </body>
 </html>
+
 <script type="text/javascript">
+    function bindShortcodeButton() {
+        jQuery('.get-content').on('click',function(){
+                console.log('hi')
+
+            if(jQuery(this).hasClass('event')){
+                var value = jQuery('#get-event-id').val();
+                var shortcode = '[art-event id="'+value+'"]';
+                tinymce.activeEditor.execCommand("mceInsertContent",0,shortcode);
+            }
+            if(jQuery(this).hasClass('donation')){
+                var value = jQuery('#get-event-id').val();
+                var shortcode = '[art-donation id="'+value+'"]';
+                tinymce.activeEditor.execCommand("mceInsertContent",0,shortcode);
+            }
+            window.top.tb_remove();
+        });
+    }
+
     jQuery(document).ready(function(){
-        jQuery('#event-name').live('change',function(){
+        jQuery('#event-name').on('change',function(){
             var value = jQuery(this).val();
             if(value == ''){
                 jQuery('#get-event').html('');
@@ -29,30 +48,20 @@
             if(value == 'event'){
                 jQuery('#get-event').html(
                 '<p> Please Enter An Event ID In Text Box Provided Below </p><br/>'+
-                    '<p>Enter Event ID : <input type="text" name="get-event-id" size="10"></p>'+
+                    '<p>Enter Event ID : <input type="text" id="get-event-id" size="10"/></p>'+
                     '<p><input type="button" value="Create Shortcode" id="TB_closeWindowButton" class="button event get-content" style="background: none repeat scroll 0 0 #E5E5E5 !important; border: 1px solid #FFFFFF; box-shadow: 0 0 2px 0 #666666; cursor: pointer; padding: 2px 5px;"/></p>'
             );
+            bindShortcodeButton();
             }else if(value=='donation'){
                 jQuery('#get-event').html(
                 '<p> Please Enter The Organization API Key In Text Box Provided Below </p><br/>'+
-                    '<p>Enter Organization ID : <input type="text" name="get-event-id" size="10"></p>'+
+                    '<p>Enter Organization ID : <input type="text" id="get-event-id" size="10"/></p>'+
                     '<p><input type="button" value="Create Shortcode" id="TB_closeWindowButton" class="button donation get-content" style="background: none repeat scroll 0 0 #E5E5E5 !important; border: 1px solid #FFFFFF; box-shadow: 0 0 2px 0 #666666; cursor: pointer; padding: 2px 5px;"/></p>'
             );
+            bindShortcodeButton();
             }
         });
-    
-        jQuery('.get-content').live('click',function(){
-            if(jQuery(this).hasClass('event')){
-                var value = jQuery('input[name="get-event-id"]').attr('value'); 
-                var shortcode = '[art-event id="'+value+'"]';
-                tinymce.activeEditor.execCommand("mceInsertContent",0,shortcode); 
-            }
-            if(jQuery(this).hasClass('donation')){
-                var value = jQuery('input[name="get-event-id"]').attr('value'); 
-                var shortcode = '[art-donation id="'+value+'"]';
-                tinymce.activeEditor.execCommand("mceInsertContent",0,shortcode); 
-            }
-            window.top.tb_remove(); 
-        });
+
     });
-</script>    
+</script>
+  

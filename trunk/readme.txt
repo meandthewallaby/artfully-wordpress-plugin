@@ -1,10 +1,10 @@
 ﻿=== Artful.ly Widget ===
 
-Contributors: fracturedatlas, Arrow Root Media
+Contributors: fracturedatlas, jakilevy, markoof, rzvagelsky
 Tags: artful.ly api, widget, ticket, ticket sales, Artful.ly, Artfully, ticketing, donations, donation, arts
-Requires at least: 3.0
-Tested up to: 3.3.1
-Stable tag: 0.9
+Requires at least: 3.3.1
+Tested up to: 3.5.1
+Stable tag: 0.10
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
