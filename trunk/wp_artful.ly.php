@@ -21,9 +21,9 @@ function art_event_data($atts) {
     extract(shortcode_atts(array(
                 'id' => '21',
                     ), $atts));
-    echo '<div id="artfully-event"></div>';
     wp_enqueue_script( 'artfully_event', NME_PLUGIN_URL.'/js/artfully-event.js', false, false, true);
     wp_localize_script( 'artfully_event', 'artfully_event', array('eventId' => $id) );
+    return '<div id="artfully-event"></div>';
 }
 
 add_shortcode('art-donation', 'art_donation_data');
@@ -32,9 +32,9 @@ function art_donation_data($atts) {
     extract(shortcode_atts(array(
                 'id' => '21',
                     ), $atts));
-    echo '<div id="donation"></div>';
     wp_enqueue_script( 'artfully_donation', NME_PLUGIN_URL.'/js/artfully-donation.js', false, false, true);
     wp_localize_script( 'artfully_donation', 'artfully_donation', array('donationId' => $id) );
+    return '<div id="donation"></div>';
 }
 
 add_action('admin_enqueue_scripts', 'nme_load_admin_script');
