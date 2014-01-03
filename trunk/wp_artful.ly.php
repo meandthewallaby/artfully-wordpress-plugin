@@ -2,15 +2,15 @@
 /*
  * Plugin Name: artfully-widget
  * Description: Adds a Shortcode to Wordpress Post/Page with an Event ID. You can easily include a Dynamic Event ID Shortcode into your WordPress's Blog Post/Page.
- * Version: 0.11
+ * Version: 1.0
  */
 ?>
 <?php
 define('NME_PLUGIN_URL', WP_PLUGIN_URL . '/' . dirname(plugin_basename(__FILE__)));
 
 function nme_add_scripts() {
-    wp_enqueue_script('artfully.js', 'https://www.artful.ly/assets/artfully-v3.js', array('jquery'));
-    wp_enqueue_style('artfully.css', 'https://www.artful.ly/assets/themes/default.css');
+    wp_enqueue_script('artfully.js', 'https://artfully-production.s3.amazonaws.com/assets/artfully-v3.js', array('jquery'));
+    wp_enqueue_style('artfully.css', 'https://artfully-production.s3.amazonaws.com/assets/themes/default.css');
 }
 
 add_action('wp_head', 'nme_add_scripts', 1);
