@@ -9,11 +9,23 @@
 define('NME_PLUGIN_URL', WP_PLUGIN_URL . '/' . dirname(plugin_basename(__FILE__)));
 
 function nme_add_scripts() {
-    wp_enqueue_script('artfully.js', 'https://artfully-production.s3.amazonaws.com/assets/artfully-v3.js', array('jquery'));
-    wp_enqueue_style('artfully.css', 'https://artfully-production.s3.amazonaws.com/assets/themes/default.css');
+    wp_enqueue_script('artfully.js', NME_PLUGIN_URL.'/js/artfully.js', array('jquery'));
+    wp_enqueue_style('artfully.css', NME_PLUGIN_URL.'/css/artfully.css');
 }
 
 add_action('wp_head', 'nme_add_scripts', 1);
+
+add_shortcode('art-next-events', 'art_next_events_data');
+
+function art_next_events_data($atts) {
+    extract(shortcode_atts(array(
+                'id' => '21',
+		'numEvents' => 1,
+                    ), $atts));
+    wp_enqueue_script( 'next_events', NME_PLUGIN_URL.'/js/artfully-next-events.js', false, false, true);
+    wp_localize_script( 'next_events', 'next_events', array('organizationId' => $id, 'numEvents' => $numEvents) );
+    return '<div id="artfully-next-events"></div>';
+}
 
 add_shortcode('art-event', 'art_event_data');
 
