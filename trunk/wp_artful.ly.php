@@ -20,10 +20,10 @@ add_shortcode('art-next-events', 'art_next_events_data');
 function art_next_events_data($atts) {
     extract(shortcode_atts(array(
                 'id' => '21',
-		'numEvents' => 1,
+		'num_events' => 1,
                     ), $atts));
     wp_enqueue_script( 'next_events', NME_PLUGIN_URL.'/js/artfully-next-events.js', false, false, true);
-    wp_localize_script( 'next_events', 'next_events', array('organizationId' => $id, 'numEvents' => $numEvents) );
+    wp_localize_script( 'next_events', 'next_events', array('organizationId' => $id, 'numEvents' => $num_events) );
     return '<div id="artfully-next-events"></div>';
 }
 
@@ -136,4 +136,6 @@ function nme_art_plugin_action_links($links, $file) {
     }
     return $links;
 }
+
+require_once(dirname(__FILE__).'/php/next-event-widget.php');
 ?>
