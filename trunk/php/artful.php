@@ -14,7 +14,10 @@
             <select name="event-name" id="event-name">
                 <option value="">Choose an Option</option>
                 <option value="event">Event</option>
-                <option value="donation">Donation</option></select>
+                <option value="donation">Donation</option>
+		<option value="next-events">Next Events</option>
+		<option value="calendar">Events Calendar</option>
+	    </select>
             <div id="get-event"></div>
         </div>
     </body>
@@ -23,8 +26,6 @@
 <script type="text/javascript">
     function bindShortcodeButton() {
         jQuery('.get-content').on('click',function(){
-                console.log('hi')
-
             if(jQuery(this).hasClass('event')){
                 var value = jQuery('#get-event-id').val();
                 var shortcode = '[art-event id="'+value+'"]';
@@ -33,6 +34,17 @@
             if(jQuery(this).hasClass('donation')){
                 var value = jQuery('#get-event-id').val();
                 var shortcode = '[art-donation id="'+value+'"]';
+                tinymce.activeEditor.execCommand("mceInsertContent",0,shortcode);
+            }
+            if(jQuery(this).hasClass('next-events')){
+                var orgId = jQuery('#organization-id').val();
+                var numEvents = jQuery('#num-events').val();
+                var shortcode = '[art-next-events id="'+orgId+'" num_events="'+numEvents+'"]';
+                tinymce.activeEditor.execCommand("mceInsertContent",0,shortcode);
+            }
+            if(jQuery(this).hasClass('calendar')){
+                var orgId = jQuery('#organization-id').val();
+                var shortcode = '[art-events-calendar id="'+orgId+'"]';
                 tinymce.activeEditor.execCommand("mceInsertContent",0,shortcode);
             }
             window.top.tb_remove();
@@ -50,16 +62,31 @@
                 '<p> Please Enter An Event ID In Text Box Provided Below </p><br/>'+
                     '<p>Enter Event ID : <input type="text" id="get-event-id" size="10"/></p>'+
                     '<p><input type="button" value="Create Shortcode" id="TB_closeWindowButton" class="button event get-content" style="background: none repeat scroll 0 0 #E5E5E5 !important; border: 1px solid #FFFFFF; box-shadow: 0 0 2px 0 #666666; cursor: pointer; padding: 2px 5px;"/></p>'
-            );
-            bindShortcodeButton();
+		);
+		bindShortcodeButton();
             }else if(value=='donation'){
                 jQuery('#get-event').html(
                 '<p> Please Enter The Organization API Key In Text Box Provided Below </p><br/>'+
                     '<p>Enter Organization ID : <input type="text" id="get-event-id" size="10"/></p>'+
                     '<p><input type="button" value="Create Shortcode" id="TB_closeWindowButton" class="button donation get-content" style="background: none repeat scroll 0 0 #E5E5E5 !important; border: 1px solid #FFFFFF; box-shadow: 0 0 2px 0 #666666; cursor: pointer; padding: 2px 5px;"/></p>'
-            );
-            bindShortcodeButton();
-            }
+		);
+		bindShortcodeButton();
+            } else if(value=="next-events"){
+                jQuery('#get-event').html(
+                '<p> Please enter an organization ID and number of events to show in the fields provided below </p><br/>'+
+                    '<p>Organization ID: <input type="text" id="organization-id" size="10"/></p>'+
+                    '<p>Number of Events: <input type="text" id="num-events" size="10" value="1" /></p>'+
+                    '<p><input type="button" value="Create Shortcode" id="TB_closeWindowButton" class="button next-events get-content" style="background: none repeat scroll 0 0 #E5E5E5 !important; border: 1px solid #FFFFFF; box-shadow: 0 0 2px 0 #666666; cursor: pointer; padding: 2px 5px;"/></p>'
+		);
+		bindShortcodeButton();
+            } else if(value=="calendar"){
+                jQuery('#get-event').html(
+                '<p> Please enter an organization ID to show in the fields provided below </p><br/>'+
+                    '<p>Organization ID: <input type="text" id="organization-id" size="10"/></p>'+
+                    '<p><input type="button" value="Create Shortcode" id="TB_closeWindowButton" class="button calendar get-content" style="background: none repeat scroll 0 0 #E5E5E5 !important; border: 1px solid #FFFFFF; box-shadow: 0 0 2px 0 #666666; cursor: pointer; padding: 2px 5px;"/></p>'
+		);
+		bindShortcodeButton();
+	    }
         });
 
     });

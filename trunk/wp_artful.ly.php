@@ -92,7 +92,13 @@ function nme_artful_options() {
     echo '<strong>EVENTS</strong><br/><br/>';
     echo 'For events, simply add<br/><br/>';
     echo '<strong>[art-event id="eventID"]</strong><br/><br/>';
+    echo 'For a list of upcoming events, simply add<br/><br/>';
+    echo '<strong>[art-next-events id="eventID" num_events="1"]</strong><br/><br/>';
     echo '* Make sure you replace "eventID" with your actual event ID. Event ID\'s can be found by logging into your <a href="http://artful.ly" target="blank">artful.ly</a> account<br/><br/><br/>';
+    echo '<strong>EVENTS CALENDAR</strong><br/><br/>';
+    echo 'Artful.ly provides a simple-to-use events calendar! Simply add the following shortcode:<br/><br/>';
+    echo '<strong>[art-events-calendar id="organizationID"]</strong><br/><br/>';
+    echo '* Make sure you replace "organizationID" with your actual organization ID. Organization ID\'s can be found by logging into your <a href="http://artful.ly" target="blank">artful.ly</a> account<br/><br/><br/>';
     echo '<strong>NIFTY BUTTONS</strong><br/><br/><br/>';
     echo 'If you forget the shortcodes, don\'t worry - there\'s a handy button on every post and page to access your <a href="http://artful.ly" target="blank">artful.ly</a> content<br/><br/>';
     echo 'Simple, wasn\'t it :-)<br/><br/><br/><br/>';
