@@ -8,46 +8,65 @@ jQuery(document).ready(function() {
     var monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"]
     var shortMonthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
     var now = new Date();
-    var date = artfully_events.month != null && artfully_events.month.match(/^\d{4}-\d{1,2}$/) != null ? 
+    var selectedDate = artfully_events.month != null && artfully_events.month.match(/^\d{4}-\d{1,2}$/) != null ? 
 	new Date(artfully_events.month.substr(0,4), parseInt(artfully_events.month.substr(5,2))-1, 1) : new Date();
-    
-    //Build the calendar header
-    $(".artfully-calendar-month").text(getMonthName(date.getMonth(), false) + ' ' + date.getFullYear());
-    var prevMonth = addMonths(date, -1);
-    $("#artfully-prev-month").append(
-	$("<a>").attr("href", "?event-month="+prevMonth.getFullYear()+"-"+getTwoDigitMonth(prevMonth.getMonth()+1))
-	    .text("\u2190 "+getMonthName(prevMonth.getMonth(), false)));
-    var nextMonth = addMonths(date, 1);
-    $("#artfully-next-month").append(
-	$("<a>").attr("href", "?event-month="+nextMonth.getFullYear()+"-"+getTwoDigitMonth(nextMonth.getMonth()+1))
-	    .text(getMonthName(nextMonth.getMonth(), false)+" \u2192"));
 
     var monthSelect = $("<select>").attr("id", "artfully-select-month").attr("name", "month");
     for(var i = 0; i < 12; i++) {
 	monthSelect.append($("<option>").val(i+1).text(monthNames[i]));
     }
-    monthSelect.val(date.getMonth()+1);
 
     var yearSelect = $("<select>").attr("id", "artfully-select-year");
     for(var i = now.getFullYear()-2; i <= now.getFullYear()+2; i++) {
 	yearSelect.append($("<option>").val(i).text(i));
     }
-    yearSelect.val(date.getFullYear());
+
     $("#artfully-this-month").append(monthSelect);
     $("#artfully-this-month").append(yearSelect);
 
     $("#artfully-select-month").change(function() {
-	goToNewMonth(date.getFullYear(), $(this).val());
+	goToNewMonth(selectedDate.getFullYear(), $(this).val());
     });
     $("#artfully-select-year").change(function() {
-	goToNewMonth($(this).val(), date.getMonth()+1);
+	goToNewMonth($(this).val(), selectedDate.getMonth()+1);
+    });
+    $("#artfully-prev-month").click(function() {
+	var currently = new Date($("#artfully-select-year").val(), parseInt($("#artfully-select-month").val())-1, 1);
+	var prevMonth = addMonths(currently, -1);
+	console.log(prevMonth);
+	goToNewMonth(prevMonth.getFullYear(), prevMonth.getMonth()+1);
+    });
+    $("#artfully-next-month").click(function() {
+	var currently = new Date($("#artfully-select-year").val(), parseInt($("#artfully-select-month").val())-1, 1);
+	var nextMonth = addMonths(currently, 1);
+	console.log(nextMonth);
+	goToNewMonth(nextMonth.getFullYear(), nextMonth.getMonth()+1);
     });
 
-    //Build the actual calendar
-    buildCalendar(date);
+    navigate(selectedDate);
 
-    //Populate the calendar with events
-    artfully.widgets.artfully_events().display(artfully_events.organizationId, date.getYear(), date.getMonth(), artfully_events.domId);
+    function navigate(date) {
+	buildHeader(date);
+
+	monthSelect.val(date.getMonth()+1);
+	yearSelect.val(date.getFullYear());
+
+	//Build the actual calendar
+	clearCalendar();
+	buildCalendar(date);
+
+	//Populate the calendar with events
+	artfully.widgets.artfully_events().display(artfully_events.organizationId, date.getYear(), date.getMonth(), artfully_events.domId);
+    }
+
+    function buildHeader(date) {
+	//Build the calendar header
+	$(".artfully-calendar-month").text(getMonthName(date.getMonth(), false) + ' ' + date.getFullYear());
+	var prevMonth = addMonths(date, -1);
+	$("#artfully-prev-month").text("\u2190 "+getMonthName(prevMonth.getMonth(), false));
+	var nextMonth = addMonths(date, 1);
+	$("#artfully-next-month").text(getMonthName(nextMonth.getMonth(), false)+" \u2192");
+    }
 
     function buildCalendar(date) {
 	var today = new Date();
@@ -81,6 +100,10 @@ jQuery(document).ready(function() {
 	}
     }
 
+    function clearCalendar() {
+	$(".artfully-calendar > tbody").children("tr").remove();
+    }
+
     function getMonthName(monthNum, useShort) {
 	return useShort ? shortMonthNames[monthNum] : monthNames[monthNum];
     }
@@ -103,8 +126,11 @@ jQuery(document).ready(function() {
     }
 
     function goToNewMonth(year, month) {
+	var newDate = new Date(year, month-1, 1);
 	var eventMonth = year + '-' + getTwoDigitMonth(month);
-	document.location = '?event-month='+eventMonth;
+	var newUrl = '?event-month=' + eventMonth;
+	window.history.pushState({"event-month": eventMonth}, "", newUrl);
+	navigate(newDate);
     }
 });
 

@@ -1,8 +1,8 @@
 <h3 class="artfully-calendar-month"></h3>
 <div class="artfully-month-selector">
-<span id="artfully-prev-month"></span>
+<a id="artfully-prev-month" class="art-month-link"></a>
 <span id="artfully-this-month"></span>
-<span id="artfully-next-month"></span>
+<a id="artfully-next-month" class="art-month-link"></a>
 </div>
 <table class="artfully-calendar">
 <thead>
