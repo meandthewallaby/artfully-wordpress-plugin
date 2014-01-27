@@ -10,7 +10,7 @@ if( !class_exists( 'artfullynexteventswidget' ) ) {
 	function artfullynexteventswidget() {
 	    $widget_ops = array('classname' => 'artfullyEvents', 'description' => __('Display the upcoming Artful.ly events!', 'artfullynexteventswidget'));
 	    $control_ops = array('id_base' => 'artfullynexteventswidget');
-	    $this->WP_Widget('artfullynexteventswidget', $name = __('Artful.ly', 'Artful.ly Next Events Widget'), $widget_ops, $control_ops);
+	    $this->WP_Widget('artfullynexteventswidget', $name = __('Artful.ly Next Events Widget', 'artfullynexteventswidget'), $widget_ops, $control_ops);
 	}
 
 	function widget( $args, $instance ) {
