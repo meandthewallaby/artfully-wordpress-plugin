@@ -8,8 +8,7 @@ jQuery(document).ready(function() {
     var monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"]
     var shortMonthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
     var now = new Date();
-    var selectedDate = artfully_events.month != null && artfully_events.month.match(/^\d{4}-\d{1,2}$/) != null ? 
-	new Date(artfully_events.month.substr(0,4), parseInt(artfully_events.month.substr(5,2))-1, 1) : new Date();
+    var selectedDate = getDate(artfully_events.month);
 
     var monthSelect = $("<select>").attr("id", "artfully-select-month").attr("name", "month");
     for(var i = 0; i < 12; i++) {
@@ -120,6 +119,11 @@ jQuery(document).ready(function() {
 	return result;
     }
 
+    function getDate(eventMonth) {
+	return eventMonth != null && eventMonth.match(/^\d{4}-\d{1,2}$/) != null ? 
+	    new Date(eventMonth.substr(0,4), parseInt(eventMonth.substr(5,2))-1, 1) : new Date();
+    }
+
     function getTwoDigitMonth(month) {
 	var paddedMonth = '00' + month;
 	return paddedMonth.substr(paddedMonth.length-2,2);
@@ -129,8 +133,16 @@ jQuery(document).ready(function() {
 	var newDate = new Date(year, month-1, 1);
 	var eventMonth = year + '-' + getTwoDigitMonth(month);
 	var newUrl = '?event-month=' + eventMonth;
-	window.history.pushState({"event-month": eventMonth}, "", newUrl);
+	window.history.pushState({month: eventMonth}, "", newUrl);
 	navigate(newDate);
+    }
+    
+    window.onpopstate = function(e) {
+	if(e.state) {
+	    navigate(getDate(e.state.month));
+	} else {
+	    navigate(new Date());
+	}
     }
 });
 
