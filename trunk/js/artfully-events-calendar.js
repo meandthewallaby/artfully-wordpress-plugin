@@ -69,6 +69,7 @@ jQuery(document).ready(function() {
 
     function buildCalendar(date) {
 	var today = new Date();
+	today.setHours(0,0,0,0);
 	var firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
 	var lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
 	var dayOfWeek = firstDay.getDay();
