@@ -244,7 +244,7 @@ function (window, document, undefined) {
         cart_uri: cart_uri
     }
 }(), artfully.widgets = function () {
-    var artfully_event, cart, donation, next_events, widgetCache = {};
+    var artfully_event, cart, donation, next_events, artfully_events, widgetCache = {};
     return modelize_ticket_type = function (ticket_types, ticket_type_model, callback) {
         artfully.utils.modelize(ticket_types, ticket_type_model, callback)
     }, artfully_event = function () {
@@ -381,8 +381,12 @@ function (window, document, undefined) {
 
         function render(data, numEvents, dom_id) {
             e = prep(data);
-	    e.reduce(numEvents);
-	    e.render(jQuery(dom_id));
+	    if(e.length > 0) {
+		e.reduce(numEvents);
+		e.render(jQuery(dom_id));
+	    } else {
+		jQuery(dom_id).append(jQuery("<div>").addClass("event-info").text("There are no upcoming events at this time."));
+	    }
         }
         return widgetCache.next_events === undefined && (widgetCache.next_events = {
             display: function (id, numEvents, target_dom_id) {
@@ -393,15 +397,66 @@ function (window, document, undefined) {
                 })
             }
         }), widgetCache.next_events
+    }, artfully_events = function() {
+	var myData;
+
+        function prep(data) {
+	    var es = artfully.utils.modelizeArray(data, artfully.models.artfully_events);
+	    es.addTZ();
+	    return es;
+        }
+
+        function render(year, month, dom_id) {
+	    var monthName = getMonthName(month, true);
+	    for (var i = 0; i < myData.length; i++) {
+		for(var j = 0; j < myData[i].shows.length; j++) {
+		    var show = myData[i].shows[j];
+		    var showDate = new Date();
+		    showDate.setTime(Date.parse(show.datetime));
+		    if(showDate.getYear() === year && showDate.getMonth() === month) {
+			var hrs = showDate.getHours();
+			var ampm = hrs >= 12 ? "pm" : "am";
+			hrs = hrs % 12;
+			hrs = hrs == 0 ? 12 : hrs;
+			var min = showDate.getMinutes() == 0 ? "" : ":" + showDate.getMinutes();
+			var time = hrs+min+ampm;
+			var title = "<a href=https://www.artful.ly/store/events/"+myData[i].id+" target=\"artfully\">"+myData[i].name+"</a>";
+			var eventDiv = jQuery("<div>").addClass("art-event").html(time+": "+title);
+			jQuery("#art-day-" + monthName + "-" + showDate.getDate()).append(eventDiv);
+		    }
+		}
+	    }
+        }
+
+	function getMonthName(monthNum, useShort) {
+	    var monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"]
+	    var shortMonthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+	    return useShort ? shortMonthNames[monthNum] : monthNames[monthNum];
+	}
+
+        return widgetCache.artfully_events === undefined && (widgetCache.artfully_events = {
+            display: function (id, year, month, target_dom_id) {
+                var dom_id = target_dom_id ? target_dom_id : ".artfully-calendar";
+		if(myData === undefined) {
+		    jQuery.getJSON(artfully.utils.next_events_uri(id), function (data) {
+			myData = prep(data);
+			render(year, month, dom_id);
+		    });
+		} else {
+		    render(year, month, dom_id);
+		}
+            }
+        }), widgetCache.artfully_events
     }, {
         event: artfully_event,
         show: artfully_show,
         cart: cart,
         donation: donation,
-	next_events: next_events
+	next_events: next_events,
+	artfully_events: artfully_events
     }
 }(), artfully.models = function () {
-    var chart, section, ticket_type, performance, artfully_event, donation, next_events;
+    var chart, section, ticket_type, performance, artfully_event, donation, next_events, artfully_events;
     return modelCache = {}, chart = function () {
         return modelCache.chart === undefined && (modelCache.chart = {
             render: function ($target, expanded) {
@@ -539,11 +594,30 @@ function (window, document, undefined) {
         return modelCache.next_events === undefined && (modelCache.next_events = {
             render: function ($target) {
                 $target.data("next-events", this);
-		jQuery.each(this, function(index, upcoming_event) {
-		    $target.append(
-			jQuery(document.createElement("h1")).addClass("event-name").text(upcoming_event.name)
-		    );
-		});
+		if($target.hasClass("widget")) {
+		    jQuery.each(this, function(index, upcoming_event) {
+			var isSingleShow = upcoming_event.first_showtime == upcoming_event.last_showtime;
+			var startDate = upcoming_event.first_showtime.substr(upcoming_event.first_showtime.indexOf(',')+2,6);
+			var endDate = upcoming_event.last_showtime.substr(upcoming_event.last_showtime.indexOf(',')+2,6);
+			var dates = isSingleShow ? upcoming_event.first_showtime : 
+			    startDate + ' - ' + endDate + "<br/>Next Show: " + upcoming_event.next_showtime;
+			var storeUrl = "http://artful.ly/store/events/" + upcoming_event.id;
+			var infoText = upcoming_event.artfully_ticketed ? "Tickets and More Info" : "More Info";
+			$target.append(
+			    jQuery("<div>").addClass("event").text(upcoming_event.name)
+			);
+			$target.append(
+			    jQuery("<div>").addClass("event-info")
+				.html(dates + "<br /><a href=\"" + storeUrl + "\" target=\"artfully\">" + infoText + "</a>")
+			);
+		    });
+		} else {
+		    jQuery.each(this, function(index, upcoming_event) {
+			$target.append(
+			    jQuery(document.createElement("h1")).addClass("event-name").text(upcoming_event.name)
+			);
+		    });
+		}
             },
 	    reduce: function(numEvents) {
 		var today = new Date();
@@ -554,18 +628,26 @@ function (window, document, undefined) {
 			this.splice(i, 1);
 		    } else {
 			//Run through the shows and add a "next_showtime" property
-			var nextShowtime = 0;
+			var nextDatetime = 0;
+			var nextShowtime = '';
 			for(var j = 0; j < numShows; j++) {
-			    var thisShowtime = Date.parse(this[i].shows[j].datetime);
-			    nextShowtime = (nextShowtime === 0 && thisShowtime-today > 0) || 
-				(thisShowtime !== undefined && thisShowtime-today > 0 && thisShowtime < nextShowtime) ? thisShowtime : nextShowtime;
+			    var thisDatetime = Date.parse(this[i].shows[j].datetime);
+			    nextDatetime = (nextDatetime === 0 && thisDatetime-today > 0) || 
+				(thisDatetime !== undefined && thisDatetime-today > 0 && thisDatetime < nextDatetime) ? thisDatetime : nextDatetime;
+			    nextShowtime = nextDatetime === thisDatetime ? this[i].shows[j].show_time : nextShowtime;
 			}
-			var showtime = { next_showtime: nextShowtime };
-			jQuery.extend(this[i], showtime);
+			var showtimes = { 
+			    first_showtime: this[i].shows[0].show_time,
+			    last_showtime: this[i].shows[numShows-1].show_time,
+			    next_showtime: nextShowtime,
+			    next_datetime: nextDatetime,
+			    time_zone: rubyTZMap[this[i].venue.time_zone]
+			};
+			jQuery.extend(this[i], showtimes);
 		    }
 		}
 		if(numEvents > 0 && this.length > 0) {
-		    this.sort(function(a,b) { return a.next_showtime - b.next_showtime; });
+		    this.sort(function(a,b) { return a.next_datetime - b.next_datetime; });
 		    var to_cut = this.length - numEvents;
 		    this.splice(numEvents-1, to_cut);
 		} else {
@@ -575,6 +657,16 @@ function (window, document, undefined) {
 		}
 	    }
         }), modelCache.next_events
+    }, artfully_events = function () {
+        return modelCache.artfully_events === undefined && (modelCache.artfully_events = {
+	    addTZ: function() {
+		for(var i = 0; i < this.length; i++) {
+		    var tz = this[i].venue != null ? rubyTZMap[this[i].venue.time_zone] : null;
+		    var tzObj = { time_zone: tz };
+		    jQuery.extend(this[i], tzObj);
+		}
+	    }
+        }), modelCache.artfully_events
     }, {
         chart: chart,
         section: section,
@@ -582,7 +674,158 @@ function (window, document, undefined) {
         performance: performance,
         artfully_event: artfully_event,
         donation: donation,
-	next_events: next_events
+	next_events: next_events,
+	artfully_events: artfully_events
     }
 }();
 
+// Quick TimeZone mapping from Ruby time zones to IANA/Olson time zones
+var rubyTZMap = 
+{
+    "International Date Line West" : "Pacific/Midway",
+    "Midway Island" : "Pacific/Midway",
+    "American Samoa" : "Pacific/Pago_Pago",
+    "Hawaii" : "Pacific/Honolulu",
+    "Alaska" : "America/Juneau",
+    "Pacific Time (US & Canada)" : "America/Los_Angeles",
+    "Tijuana" : "America/Tijuana",
+    "Mountain Time (US & Canada)" : "America/Denver",
+    "Arizona" : "America/Phoenix",
+    "Chihuahua" : "America/Chihuahua",
+    "Mazatlan" : "America/Mazatlan",
+    "Central Time (US & Canada)" : "America/Chicago",
+    "Saskatchewan" : "America/Regina",
+    "Guadalajara" : "America/Mexico_City",
+    "Mexico City" : "America/Mexico_City",
+    "Monterrey" : "America/Monterrey",
+    "Central America" : "America/Guatemala",
+    "Eastern Time (US & Canada)" : "America/New_York",
+    "Indiana (East)" : "America/Indiana/Indianapolis",
+    "Bogota" : "America/Bogota",
+    "Lima" : "America/Lima",
+    "Quito" : "America/Lima",
+    "Atlantic Time (Canada)" : "America/Halifax",
+    "Caracas" : "America/Caracas",
+    "La Paz" : "America/La_Paz",
+    "Santiago" : "America/Santiago",
+    "Newfoundland" : "America/St_Johns",
+    "Brasilia" : "America/Sao_Paulo",
+    "Buenos Aires" : "America/Argentina/Buenos_Aires",
+    "Montevideo" : "America/Montevideo",
+    "Georgetown" : "America/Guyana",
+    "Greenland" : "America/Godthab",
+    "Mid-Atlantic" : "Atlantic/South_Georgia",
+    "Azores" : "Atlantic/Azores",
+    "Cape Verde Is." : "Atlantic/Cape_Verde",
+    "Dublin" : "Europe/Dublin",
+    "Edinburgh" : "Europe/London",
+    "Lisbon" : "Europe/Lisbon",
+    "London" : "Europe/London",
+    "Casablanca" : "Africa/Casablanca",
+    "Monrovia" : "Africa/Monrovia",
+    "UTC" : "Etc/UTC",
+    "Belgrade" : "Europe/Belgrade",
+    "Bratislava" : "Europe/Bratislava",
+    "Budapest" : "Europe/Budapest",
+    "Ljubljana" : "Europe/Ljubljana",
+    "Prague" : "Europe/Prague",
+    "Sarajevo" : "Europe/Sarajevo",
+    "Skopje" : "Europe/Skopje",
+    "Warsaw" : "Europe/Warsaw",
+    "Zagreb" : "Europe/Zagreb",
+    "Brussels" : "Europe/Brussels",
+    "Copenhagen" : "Europe/Copenhagen",
+    "Madrid" : "Europe/Madrid",
+    "Paris" : "Europe/Paris",
+    "Amsterdam" : "Europe/Amsterdam",
+    "Berlin" : "Europe/Berlin",
+    "Bern" : "Europe/Berlin",
+    "Rome" : "Europe/Rome",
+    "Stockholm" : "Europe/Stockholm",
+    "Vienna" : "Europe/Vienna",
+    "West Central Africa" : "Africa/Algiers",
+    "Bucharest" : "Europe/Bucharest",
+    "Cairo" : "Africa/Cairo",
+    "Helsinki" : "Europe/Helsinki",
+    "Kyiv" : "Europe/Kiev",
+    "Riga" : "Europe/Riga",
+    "Sofia" : "Europe/Sofia",
+    "Tallinn" : "Europe/Tallinn",
+    "Vilnius" : "Europe/Vilnius",
+    "Athens" : "Europe/Athens",
+    "Istanbul" : "Europe/Istanbul",
+    "Minsk" : "Europe/Minsk",
+    "Jerusalem" : "Asia/Jerusalem",
+    "Harare" : "Africa/Harare",
+    "Pretoria" : "Africa/Johannesburg",
+    "Moscow" : "Europe/Moscow",
+    "St. Petersburg" : "Europe/Moscow",
+    "Volgograd" : "Europe/Moscow",
+    "Kuwait" : "Asia/Kuwait",
+    "Riyadh" : "Asia/Riyadh",
+    "Nairobi" : "Africa/Nairobi",
+    "Baghdad" : "Asia/Baghdad",
+    "Tehran" : "Asia/Tehran",
+    "Abu Dhabi" : "Asia/Muscat",
+    "Muscat" : "Asia/Muscat",
+    "Baku" : "Asia/Baku",
+    "Tbilisi" : "Asia/Tbilisi",
+    "Yerevan" : "Asia/Yerevan",
+    "Kabul" : "Asia/Kabul",
+    "Ekaterinburg" : "Asia/Yekaterinburg",
+    "Islamabad" : "Asia/Karachi",
+    "Karachi" : "Asia/Karachi",
+    "Tashkent" : "Asia/Tashkent",
+    "Chennai" : "Asia/Kolkata",
+    "Kolkata" : "Asia/Kolkata",
+    "Mumbai" : "Asia/Kolkata",
+    "New Delhi" : "Asia/Kolkata",
+    "Kathmandu" : "Asia/Kathmandu",
+    "Astana" : "Asia/Dhaka",
+    "Dhaka" : "Asia/Dhaka",
+    "Sri Jayawardenepura" : "Asia/Colombo",
+    "Almaty" : "Asia/Almaty",
+    "Novosibirsk" : "Asia/Novosibirsk",
+    "Rangoon" : "Asia/Rangoon",
+    "Bangkok" : "Asia/Bangkok",
+    "Hanoi" : "Asia/Bangkok",
+    "Jakarta" : "Asia/Jakarta",
+    "Krasnoyarsk" : "Asia/Krasnoyarsk",
+    "Beijing" : "Asia/Shanghai",
+    "Chongqing" : "Asia/Chongqing",
+    "Hong Kong" : "Asia/Hong_Kong",
+    "Urumqi" : "Asia/Urumqi",
+    "Kuala Lumpur" : "Asia/Kuala_Lumpur",
+    "Singapore" : "Asia/Singapore",
+    "Taipei" : "Asia/Taipei",
+    "Perth" : "Australia/Perth",
+    "Irkutsk" : "Asia/Irkutsk",
+    "Ulaanbaatar" : "Asia/Ulaanbaatar",
+    "Seoul" : "Asia/Seoul",
+    "Osaka" : "Asia/Tokyo",
+    "Sapporo" : "Asia/Tokyo",
+    "Tokyo" : "Asia/Tokyo",
+    "Yakutsk" : "Asia/Yakutsk",
+    "Darwin" : "Australia/Darwin",
+    "Adelaide" : "Australia/Adelaide",
+    "Canberra" : "Australia/Melbourne",
+    "Melbourne" : "Australia/Melbourne",
+    "Sydney" : "Australia/Sydney",
+    "Brisbane" : "Australia/Brisbane",
+    "Hobart" : "Australia/Hobart",
+    "Vladivostok" : "Asia/Vladivostok",
+    "Guam" : "Pacific/Guam",
+    "Port Moresby" : "Pacific/Port_Moresby",
+    "Magadan" : "Asia/Magadan",
+    "Solomon Is." : "Pacific/Guadalcanal",
+    "New Caledonia" : "Pacific/Noumea",
+    "Fiji" : "Pacific/Fiji",
+    "Kamchatka" : "Asia/Kamchatka",
+    "Marshall Is." : "Pacific/Majuro",
+    "Auckland" : "Pacific/Auckland",
+    "Wellington" : "Pacific/Auckland",
+    "Nuku'alofa" : "Pacific/Tongatapu",
+    "Tokelau Is." : "Pacific/Fakaofo",
+    "Chatham Is." : "Pacific/Chatham",
+    "Samoa" : "Pacific/Apia"
+};

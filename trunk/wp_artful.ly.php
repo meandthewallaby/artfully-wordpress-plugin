@@ -20,11 +20,26 @@ add_shortcode('art-next-events', 'art_next_events_data');
 function art_next_events_data($atts) {
     extract(shortcode_atts(array(
                 'id' => '21',
-		'num_events' => 1,
+		'num_events' => '1',
                     ), $atts));
     wp_enqueue_script( 'next_events', NME_PLUGIN_URL.'/js/artfully-next-events.js', false, false, true);
     wp_localize_script( 'next_events', 'next_events', array('organizationId' => $id, 'numEvents' => $num_events) );
     return '<div id="artfully-next-events"></div>';
+}
+
+add_shortcode('art-events-calendar', 'art_events_calendar');
+
+function art_events_calendar($atts) {
+    extract(shortcode_atts(array(
+                'id' => '21',
+                    ), $atts));
+    wp_enqueue_script( 'artfully_events_calendar', NME_PLUGIN_URL.'/js/artfully-events-calendar.js', false, false, true);
+    wp_localize_script( 'artfully_events_calendar', 'artfully_events', 
+	array('organizationId' => $id, 'month' => $_GET['event-month'] ) );
+    ob_start();
+    include(dirname(__FILE__).'/php/artfully-events-calendar.php');
+    $content = ob_get_clean();
+    return $content;
 }
 
 add_shortcode('art-event', 'art_event_data');
