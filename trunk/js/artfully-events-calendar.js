@@ -32,13 +32,11 @@ jQuery(document).ready(function() {
     $("#artfully-prev-month").click(function() {
 	var currently = new Date($("#artfully-select-year").val(), parseInt($("#artfully-select-month").val())-1, 1);
 	var prevMonth = addMonths(currently, -1);
-	console.log(prevMonth);
 	goToNewMonth(prevMonth.getFullYear(), prevMonth.getMonth()+1);
     });
     $("#artfully-next-month").click(function() {
 	var currently = new Date($("#artfully-select-year").val(), parseInt($("#artfully-select-month").val())-1, 1);
 	var nextMonth = addMonths(currently, 1);
-	console.log(nextMonth);
 	goToNewMonth(nextMonth.getFullYear(), nextMonth.getMonth()+1);
     });
 
